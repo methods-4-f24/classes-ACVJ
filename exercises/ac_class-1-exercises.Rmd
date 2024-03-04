@@ -1,0 +1,283 @@
+---
+title: "Exercises for class 1"
+output: html_document
+date: "13-02-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(rethinking)
+library(tidyverse) 
+pacman::p_load(gridExtra)
+```
+
+# Exercises for Class 1
+
+## Supporting code
+
+Below is code from Chapter 2 of the book that you can use to do the exercises. Not all the code you require is here though. Make sure to not rush it and take time to play around with each function. :))
+
+```{r}
+# Grid Approximation
+
+# define grid
+p_grid = seq(from = 0, to = 1, length.out=20) 
+
+# define prior
+prior = rep(1, 20)
+
+# compute likelihood at each value in grid
+likelihood = dbinom(6, size = 9, prob = p_grid)
+
+# compute product of likelihood and prior
+unstd.posterior = likelihood * prior
+
+# standardize the posterior so it sums to 1
+posterior = unstd.posterior / sum(unstd.posterior) 
+
+# plot the distribution 
+plot(p_grid, posterior, type = "b",
+     xlab = "probability of water", ylab = "posterior_probability")
+mtext("20 points")
+```
+
+## Exercises
+
+### Easy
+
+2E1. 
+
+Which of the expressions below correspond to the statement: the probability of rain on Monday?
+(1) Pr(rain)
+(2) Pr(rain|Monday) -> this one 
+(3) Pr(Monday|rain)
+(4) Pr(rain, Monday)/ Pr(Monday)
+
+the probability of rain on Monday = the probability of rain given that it's Monday 
+
+2E2.
+Which of the following statements corresponds to the expression: Pr(Monday|rain)?
+(1) The probability of rain on Monday.
+(2) The probability of rain, given that it is Monday.
+(3) The probability that it is Monday, given that it is raining. -> this one
+(4) The probability that it is Monday and that it is raining.
+
+
+2E3.
+Which of the expressions below correspond to the statement: the probability that it is Monday,
+given that it is raining?
+
+(1) Pr(Monday|rain) -> this one 
+(2) Pr(rain|Monday)
+(3) Pr(rain|Monday) Pr(Monday)
+(4) Pr(rain|Monday) Pr(Monday)/ Pr(rain)
+(5) Pr(Monday|rain) Pr(rain)/ Pr(Monday)
+
+2E4.
+
+The Bayesian statistician Bruno de Finetti (1906–1985) began his book on probability theory with the declaration: “PROBABILITY DOES NOT EXIST.” The capitals appeared in the original, so I imagine de Finetti wanted us to shout this statement. What he meant is that probability is **a device for describing uncertainty from the perspective of an observer with limited knowledge; it has no objective reality**. Discuss the globe tossing example from the chapter, in light of this statement. What does it mean to say “the probability of water is 0.7”?
+
+- Probability is a subjective perception of the likelihood that something will happen
+https://sr2-solutions.wjakethompson.com/bayesian-inference 
+
+### Medium
+
+2M1.
+
+Recall the globe tossing model from the chapter. Compute and plot the grid approximate
+posterior distribution for each of the following sets of observations. In each case, assume a uniform
+prior for p.
+(1) W, W, W
+(2) W, W, W, L
+(3) L, W, W, L, W, W, W
+
+Own attempt: 
+```{r}
+# Grid Approximation
+#code bf function, see below chunk for function 
+
+# define grid
+p_grid = seq(from = 0, to = 1, length.out=20) 
+#possible 'marble' combinations (considers all possibilities for combinations of colors in the bag - so considers all possibilities for combinations of water)
+
+# define prior
+prior = rep(1, 20)
+#where you code your belief 
+
+# compute likelihood at each value in grid
+likelihood1 = dbinom(3, size = 3, prob = p_grid)
+#dbinom(3, )=number of successes, as water is the success
+#size = trials (here, times globe is thrown and caught)= 3
+#prop = 0.3 - if the globe is x% water, what are the chances for observing 3 water when throwing it 3 times 
+
+likelihood2 = dbinom(3, size = 4, prob = p_grid)
+likelihood3 = dbinom(5, size = 7, prob = p_grid)
+
+# compute product of likelihood and prior
+unstd.posterior1 = likelihood1 * prior
+unstd.posterior2 = likelihood2 * prior
+unstd.posterior3 = likelihood3 * prior
+
+# standardize the posterior so it sums to 1
+posterior1 = unstd.posterior1 / sum(unstd.posterior1)
+posterior2 = unstd.posterior2 / sum(unstd.posterior2)
+posterior3 = unstd.posterior3 / sum(unstd.posterior3)
+
+# plot the distribution
+first <- plot(p_grid, posterior1, type = "b",
+     xlab = "probability of water", ylab = "posterior_probability")
+mtext("20 points") 
+
+sec <- plot(p_grid, posterior2, type = "b",
+     xlab = "probability of water", ylab = "posterior_probability")
+mtext("20 points") 
+
+third <- plot(p_grid, posterior3, type = "b",
+     xlab = "probability of water", ylab = "posterior_probability")
+mtext("20 points") 
+
+grid.arrange(first, sec, third)
+```
+
+
+With chat function: 
+```{r}
+library(gridExtra)
+
+#put it in functions - thank you chat gpt 
+
+calculate_posterior <- function(p_grid, prior, successes, trials) { #4 parameters
+  # compute likelihood at each value in grid
+  likelihood <- dbinom(successes, size = trials, prob = p_grid) #likelihood = dbinom(3, size = 4, prob = p_grid)
+
+  # compute product of likelihood and prior
+  unstd.posterior <- likelihood * prior
+  
+  # standardize the posterior so it sums to 1
+  posterior <- unstd.posterior / sum(unstd.posterior)
+  
+  return(posterior)
+}
+
+plot_posterior <- function(p_grid, posterior, title) { # 3 parameters p_grid, posterior and title 
+  plot(p_grid, posterior, type = "b", #b=both ie type=p (points), type=L (lines)
+       xlab = "probability of water", ylab = "posterior_probability", main = title)
+}
+
+visualize_posteriors <- function(p_grid, posterior_list, titles) { # 3 parameters
+  plots <- lapply(seq_along(posterior_list), function(i) {
+    plot_posterior(p_grid, posterior_list[[i]], titles[i])
+  })
+  
+  grid.arrange(grobs = plots, ncol = length(posterior_list))
+}
+
+# Grid Approximation
+p_grid <- seq(from = 0, to = 1, length.out = 20)
+prior <- rep(1, 20)
+
+# Calculate posteriors
+posteriors <- list()
+posteriors[[1]] <- calculate_posterior(p_grid, prior, 3, 3)
+posteriors[[2]] <- calculate_posterior(p_grid, prior, 3, 4)
+posteriors[[3]] <- calculate_posterior(p_grid, prior, 5, 7)
+
+# Plot the distribution
+titles <- c("Posterior 1", "Posterior 2", "Posterior 3")
+visualize_posteriors(p_grid, posteriors, titles)
+```
+```{r}
+dist <- tibble(p_grid = seq(from = 0, to = 1, length.out = 20),
+               prior = rep(1, times = 20)) %>%
+  mutate(likelihood_1 = dbinom(3, size = 3, prob = p_grid),
+         likelihood_2 = dbinom(3, size = 4, prob = p_grid),
+         likelihood_3 = dbinom(5, size = 7, prob = p_grid),
+         across(starts_with("likelihood"), ~ .x * prior),
+         across(starts_with("likelihood"), ~ .x / sum(.x))) %>%
+  pivot_longer(cols = starts_with("likelihood"), names_to = "pattern",
+               values_to = "posterior") %>%
+  separate(pattern, c(NA, "pattern"), sep = "_", convert = TRUE) %>%
+  mutate(obs = case_when(pattern == 1L ~ "W, W, W",
+                         pattern == 2L ~ "W, W, W, L",
+                         pattern == 3L ~ "L, W, W, L, W, W, W"))
+
+ggplot(dist, aes(x = p_grid, y = posterior)) +
+  facet_wrap(vars(fct_inorder(obs)), nrow = 1) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Proportion Water (p)", y = "Posterior Density")
+```
+from https://sr2-solutions.wjakethompson.com/bayesian-inference 
+
+2M2.
+
+Now assume a prior for p that is equal to zero when p < 0.5 and is a positive constant when
+p ≥ 0.5. Again compute and plot the grid approximate posterior distribution for each of the sets of
+observations in the problem just above.
+
+```{r}
+
+# In the book, McElreath says that we can do much better than choosing a uniform prior for estimating the coverage of water. Is this what we are doing here? How does that impact our estimation?
+
+# Defining grid 
+p_grid <- seq(from = 0, to = 1, length.out=20)
+
+#prior <- what we have to change
+prior0.5 <- ifelse(p_grid <0.5,0,1) #all probabilities before 0.5 are impossible 
+
+#repeating code from 1st attempt, changing nothing: 
+
+likelihood <- dbinom(3, size = 3, prob=prior)
+
+# compute product of likelihood and prior
+unstd.posterior = likelihood * prior
+
+# standardize the posterior so it sums to 1
+posterior = unstd.posterior / sum(unstd.posterior)
+
+# plot the distribution
+plot(p_grid, posterior, type = "b",
+     xlab = "probability of water", ylab = "posterior_probability")
+mtext("20 points")
+
+posteriors[[4]] <- calculate_posterior(p_grid, prior0.5, 3, 3)
+ 
+
+```
+
+2M3.
+
+```{r}
+
+# Use the Bayes formula!
+ 
+```
+
+For the exercises below, I highly suggest you to grab a piece of paper and try to solve the problems in a 'visual' way.
+
+2M4.
+
+```{r}
+
+# Write your probability here.
+
+```
+
+2M5.
+
+```{r}
+
+# Write your probability here.
+
+```
+
+2M6.
+
+```{r}
+
+# Write your probability here.
+
+```
