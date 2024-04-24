@@ -18,7 +18,7 @@ Welcome back to your favorite course of all time. This week we start getting int
 The exercises for this week are versions of exercises from Chapter 5, modified to ease you into our next portfolio which we will start on next week.
 
 ## Exercises
-
+  
 ### Easy.
 
 Do this by discussing the exercises in pairs. No need to code anything. :))

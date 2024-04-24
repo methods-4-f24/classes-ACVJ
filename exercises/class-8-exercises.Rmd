@@ -18,7 +18,6 @@ library(rethinking)
 
 Do all the easy exercises from Chapter 9: **9E1** through **9E6**.
 
-
 **9E1.** Which of the following is a requirement of the *simple* Metropolis algorithm?
 (1) The parameters must be discrete
 (2) The likelihood function must be Gaussian.
@@ -42,13 +41,108 @@ go next. So they get stuck." p. 724
 
 Can't handle discrete values. It needs to be able to 'stop' at any point 
 
+**9E4. Explain the difference between the effective number of samples, n_eff as calculated by Stan, and the actual number of samples**
+
+Actual number of samples = samples taken from the posterior 
+
+Autocorrelation: "Autocorrelation refers to the degree to which a sample's value depends on the values of previous samples in the chain (...) autocorrelation can affect the accuracy of our inferences because it means that the samples don't provide as much independent information as we might think. (...) To address this issue, we calculate the *effective number of samples (n_eff)*. This is an estimate of the number of samples that would be completely independent (uncorrelated) and contain the same amount of information as the actual samples drawn. As autocorrelation increases, the effective number of samples decreases because each sample provides less independent information." - chatgpt 
+
+**9E5. Which value should Rhat approach, when a chain is sampling the posterior distribution correctly?** 
+
+It should approach 1 from above. p 287 
+
+**9E6. Sketch a good trace plot for a Markov chain, one that is effectively sampling from the posterior distribution. What is good about its shape? Then sketch a trace plot for a malfunctioning Markov chain. What about its shape indicates malfunction?**
+
+See p. 301 for examples of good and bad trace plots. A bad trace plot shows an unregular search of the parameter space, characterized by a line staying in the same space and sometimes going to extreme values. Can be caused by little data and *flat* priors. A bad chain can also be spotted by staying in the same place, ie the top. 
+
+Examples from https://sr2-solutions.wjakethompson.com/overfitting-mcmc#chapter-9
+
+Good: 
+```{r}
+iters <- 1000
+
+good_chain <- tibble(.iter = seq_len(iters),
+                     chain1 = rnorm(n = iters, mean = 0, sd = 1),
+                     chain2 = rnorm(n = iters, mean = 0, sd = 1),
+                     chain3 = rnorm(n = iters, mean = 0, sd = 1)) %>% 
+  pivot_longer(-.iter, names_to = "chain", values_to = "value")
+
+ggplot(good_chain, aes(x = .iter, y = value, color = chain)) +
+  geom_line(show.legend = FALSE) +
+  scale_color_discrete() +
+  labs(x = "Iteration", y = "Value")
+```
+
+
+Bad: 
+```{r}
+bad_chain <- tibble(.iter = seq_len(iters),
+                    chain1 = rnorm(n = iters, mean = 0, sd = 1),
+                    chain2 = rnorm(n = iters, mean = 0, sd = 1),
+                    chain3 = rnorm(n = iters, mean = 3, sd = .5)) %>% 
+  pivot_longer(-.iter, names_to = "chain", values_to = "value")
+
+ggplot(bad_chain, aes(x = .iter, y = value, color = chain)) +
+  geom_line(show.legend = FALSE) +
+  scale_color_discrete() +
+  labs(x = "Iteration", y = "Value")
+```
 
 ### Medium
 
-#### 9M1
+#### 9M1 - didn't finish - help link: https://sr2-solutions.wjakethompson.com/overfitting-mcmc#chapter-9
+
+**Re-estimate the terrain ruggedness model from the chapter, but now using a uniform prior and an exponential prior for the standard deviation, sigma. The uniform prior should be dunif(0,10)and the exponential should be dexp(1). Do the different priors have any detectible influence on the posterior distribution?**
+
+code p. 285 
+```{r}
+ #prep 
+
+#r code 9.12
+library(rethinking)
+data(rugged)
+d <- rugged
+d$log_gdp <- log(d$rgdppc_2000)
+dd <- d[ complete.cases(d$rgdppc_2000) , ]
+dd$log_gdp_std <- dd$log_gdp / mean(dd$log_gdp)
+dd$rugged_std <- dd$rugged / max(dd$rugged)
+dd$cid <- ifelse( dd$cont_africa==1 , 1 , 2 )
+
+##r code 9.13
+dat_slim <- list(
+  log_gdp_std = dd$log_gdp_std,
+  rugged_std = dd$rugged_std,
+  cid = as.integer( dd$cid )
+  )
+
+str(dat_slim)
+```
 
 ```{r}
+#model fitting - "original"
 
+##r code 9.14 
+m9.1 <- ulam(
+  alist(
+  log_gdp_std ~ dnorm( mu , sigma ) ,
+  mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+  a[cid] ~ dnorm( 1 , 0.1 ) ,
+  b[cid] ~ dnorm( 0 , 0.3 ) ,
+  sigma ~ runif( 1 )
+  ) , data=dat_slim , chains=1 )
+```
+
+
+```{r}
+#model fitting messing 
+m9.1.1 <- ulam(
+  alist(
+  log_gdp_std ~ dnorm( mu , sigma ) ,
+  mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+  a[cid] ~ dnorm( 1 , 0.1 ) ,
+  b[cid] ~ dnorm( 0 , 0.3 ) ,
+  sigma ~ dexp( 1 )
+  ) , data=dat_slim , chains=1 )
 ```
 
 #### 9M2
