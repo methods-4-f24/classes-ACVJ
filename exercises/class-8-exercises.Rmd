@@ -18,23 +18,47 @@ library(rethinking)
 
 Do all the easy exercises from Chapter 9: **9E1** through **9E6**.
 
+
+**9E1.** Which of the following is a requirement of the *simple* Metropolis algorithm?
+(1) The parameters must be discrete
+(2) The likelihood function must be Gaussian.
+*(3) The proposal distribution must be symmetric. -> This one*
+
+The simple Metropolis algorithm requires the proposals to arise from a symmetric distribution - spørg lige chris 
+
+"The Metropolis algorithm works whenever the probability of proposing a jump to B from A is equal to the probability of proposing A from B, when the  proposal distribution is symmetric." p. 273 
+
+**9E2.** Gibbs sampling is more efficient than the Metropolis algorithm. How does it achieve this extra efficiency? Are there any limitations to the Gibbs sampling strategy?
+
+It uses *adaptive proposals*, meaning that it uses different *conjugate pairs*. Conjugate pairs are, I imagine, kinda like puzzle pieces. If a prior and a likelihood fits together in a particular way, then the posterior has the same structure as the prior (Chris explanation) p. 273 
+
+Limitations to Gibbs sampling: 
+- They can get stuck for long time in small regions of the posterior 
+- Especially an issue with more parameters, as it's more likely for some parameters to be highly correlated (high correlation = narrow ridges, I imagine a mountain peak)
+- "both Metropolis and Gibbs make too many dumb proposals of where to
+go next. So they get stuck." p. 724 
+
+**9E3.** Which sort of parameters can Hamiltonian Monte Carlo not handle? Can you explain why?
+
+Can't handle discrete values. It needs to be able to 'stop' at any point 
+
+
 ### Medium
 
 #### 9M1
 
 ```{r}
 
-# Your solution here
-
 ```
 
 #### 9M2
 
+
 ```{r}
 
-# Your solution herre
-
 ```
+
+
 
 ### Hard
 
