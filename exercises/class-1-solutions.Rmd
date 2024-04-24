@@ -126,7 +126,7 @@ Using the table similar to one on page 25.
 
 Total ways to produce observation *B*: 3
 
-Since BB card can produce *B* in two different ways (via each side) out of total possible ways, the probability that the called pulled out was indeed BB is **2/3** or **0.66**.
+Since BB card can produce *B* in two different ways (via each side) out of total possible ways, the probability that the cart pulled out was indeed BB is **2/3** or **0.66**.
 
 #### 2M5.
 

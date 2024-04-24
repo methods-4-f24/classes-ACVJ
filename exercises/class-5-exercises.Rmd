@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(rethinking)
-library(daggity)
+pacman::p_load(daggitty)
 ```
 
 Welcome back to your favorite course of all time. This week we start getting into causal inference - arguably the most important part of all of your Methods courses. Why? Because we finally start practicing *doing science*, not just statistics.
@@ -22,6 +22,46 @@ The exercises for this week are versions of exercises from Chapter 5, modified t
 ### Easy.
 
 Do this by discussing the exercises in pairs. No need to code anything. :))
+
+5E1. Which of the linear models below are multiple linear regressions?
+Answer: 
+
+5E1: 
+
+(4) 
+$$\mu_i = \alpha + \beta x X_i + \beta_z Z_i$$
+
+5E2: 
+
+$$\mu = \alpha + \beta _xX_i+\beta_zZ_i$$
+
+$\mu$ = animal diversity 
+$\alpha$ = constant 
+$X_i$ = Latitude 
+$Z_i$ = plant diversity 
+
+controlling for / stratisfying = including in model 
+
+5E3: 
+Write down a multiple regression to evaluate the claim: Neither amount of funding nor size of laboratory is by itself a good predictor of time to PhD degree; but together these variables are both positively associated with time to degree. Write down the model definition and indicate which side of zero each slope parameter should be on.
+
+P. 137 - here we see the power of the different variables
+- if a black line is around 0, it has no effect 
+- we can see how adding both gives a positive effect 
+
+So we can imagine that the predictors by themselves are around 0, but together are positive = ("together these variables are both positively associated with time to degree") 
+
+This would result in 
+
+$$\mu_i = \beta_FF_i + \beta_sS_i$$
+Where there's a $+$ 
+
+5E4:  
+Suppose you have a single categorical predictor with 4 levels (unique values), labeled A, B, C and D. Let Ai be an indicator variable that is 1 where case i is in category A. Also suppose Bi, Ci, and Di for the other categories. Now which of the following linear models are inferentially equivalent ways to include the categorical variable in a regression? Models are inferentially equivalent when it’s possible to compute one posterior distribution from the posterior distribution of another model.
+
+$$(1) \space \mu_i = \alpha + \beta_AA_i + \beta_BB_i + \beta_DD_i \\ (2) \space \mu_i = \alpha + \beta_AA_i + \beta_BB_i+ \beta_CC_i + \beta_DD_i \\ (3) \space \mu_i = \alpha + \beta_BB_i + \beta_CC_i = \beta_DD_i \\ (4) \space \mu = \alpha_AA_i + \alpha_BB_i + \alpha_CC_i + \alpha_DD_i \\ (5) \space  \mu_i = \alpha_A(1-B_i - C_i - D_i)+\alpha_BB_i + \alpha_CC_i + \alpha_DD_i  $$
+(After talking to Nina) 
+So, A, B, C and D can only be either 1 or 0. If one of them is 1 then the others are 0. Furthermore, there's no reason to include C - C is $\alpha$. With this in mind,  1, 3, 4, and 5 are the same.  
 
 ### Medium
 
@@ -39,20 +79,44 @@ Invent your own example of a spurious correlation. An outcome variable should be
 
 See if you can come up with a cogsci-inspired phenomenon. Anxiety? Bliss? Make a DAG and use the *daggity* package to illustrate it. 
 
+We pretend to look at what effects grades. Here we say that grades are affected by reading speed and sleep. Here, we have a fork between reading speed -> Grades <- sleep. 
+
+
+From p. 133 
+```{r} 
+dag <- dagitty( "dag {
+sleep -> Grade 
+R_Speed -> Grade
+}")
+#coordinates(dag) <- list( x=c(A=0,D=1,M=2) , y=c(A=0,D=1,M=0) )v ?
+drawdag(dag)  
+```
+
+What are the conditional independencies of your DAG?
+Sleep and reading speed are only independent if you include what 'connects' two in your model - sleep and reading speed are conditionally independent of grades:
+
 ```{r}
-
-# ilustrate your dag
-# What are the conditional independencies of your DAG?
-
+DMA_dag <- dagitty('dag{ s <- g -> r }')
+impliedConditionalIndependencies( DMA_dag )
 ```
 
 Now see if you can play god and generate the data. This will require you to think even deeper about your variables - what is the scale of each variable and how they interact. Formulate your assumptions in natural language and perhaphs ask ChatGPT to help you with the data simulation process to avoid spending a lot of time looking for the right code. Just make sure that the output matches your desired generative structure. :))
 
 ```{r}
-
+set.seed(123)
 # generate your data here
+n <- 1000
+#simulating 1000 
 
+# we assume peple sleep on average 7 hours pr night 
+sleep <- rnorm(n, 6.8, 0.8) #7 is the mean, 0.8 is the sd
+reading_speed <- rnorm(n, 200, 50) # 200 words pr minute
+
+hist(reading_speed)
+hist(sleep)
 ```
+
+
 
 #### 5M2.
 
